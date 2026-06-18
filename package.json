@@ -1,0 +1,27 @@
+{
+  "name": "pt(pay-toll)",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chitransh-Panwar/Pay-Toll.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Chitransh-Panwar/Pay-Toll/issues"
+  },
+  "homepage": "https://github.com/Chitransh-Panwar/Pay-Toll#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "lru-cache": "^11.5.1",
+    "node-fetch": "^3.3.2"
+  }
+}

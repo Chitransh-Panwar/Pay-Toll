@@ -1,4 +1,4 @@
-import dns from "dns/promise"
+import dns from "dns/promises"
 import {LRUCache} from "lru-cache"
 import fetch from "node-fetch";
 
@@ -161,3 +161,110 @@ export function isDatacenterIP(ip) {
 }
 
 // HEADER FINGERPRINTS 
+const BROWSER_HEADERS=[
+  "accept-language",
+  "accept-encoding",
+  "sec-fetch-site",
+  "sec-ch-ua",
+]
+
+export function headerScore(headers) {
+  let score=0;
+  const missing =BROWSER_HEADERS.filter((h)=>!headers[h])
+  score+=missing.length*12
+  if (!headers["accept"]) score+= 20
+  if (headers["accept"]=== "*/*") score+=15
+  if (headers["connection"]) score+=10
+  return score
+}
+
+//REVERSE DNS VERIFICATION
+const dnsCache=new LRUCache({max:2000,ttl:100*60*60})
+const LEGITIMATE_BOT_HOSTNAME=[
+  /googlebot\.com$/,
+  /google\.com$/,
+  /crawl\.yahoo\.net$/,
+  /search\.msn\.com$/,
+  /anthropic\.com$/,
+  /openai\.com$/,
+]
+
+export async function reversednsloopup(ip) {
+  if(dnsCache.has(ip)) return dnsCache.get(ip);
+  try {
+    const hostname=await dns.reverse(ip);
+    const result=hostname[0]?? null
+    dnsCache.set(ip,result)
+    return result
+  } catch {
+    dnsCache.set(ip,null)
+    return null
+  }
+}
+
+export async function isverifiedLegitBot(ip,uaName) {
+  if(!uaName) return false;
+  const hostname=await reversednsloopup(ip)
+  if(!hostname) return false ;
+  return LEGITIMATE_BOT_HOSTNAME.some((pattern)=>pattern.test(hostname));
+}
+
+export async function aiDetector(req,res,next){
+  const ua=req.headers["user-agent"] ?? ""
+  const ip=
+    req.headers["x-forwarded-for"]?.split(",")[0].trim()??
+    req.socket?.remoteAddress ??
+    "";
+
+  let totalscore=0;
+  let detectedname=null;
+  const signals=[];
+
+  const uaMatch=BOT_UA_PATTERNS.find(({pattern})=>pattern.test(ua));
+  if (uaMatch) {
+    totalscore+=uaMatch.score;
+    detectedname=uaMatch.name;
+    signals.push(`ua:${uaMatch.name}(${uaMatch.score})`);
+  } else if (!ua) {
+    totalscore+=60;
+    signals.push("ua:missing(60)");
+  }
+
+  const hscore=headerScore(req.headers);
+  if(hscore>0) {
+    totalscore+=hscore;
+    signals.push(`headers:suspicious(${hscore})`);
+  }
+
+  if (ip&&isDatacenterIP(ip)) {
+    totalscore+=30
+    signals.push("ip:datacenter(30)");
+  }
+
+  let isVerifiedBot=false;
+  if (uaMatch && uaMatch.score >= 70) {
+    isVerifiedBot=await isverifiedLegitBot(ip,detectedname);
+    if (isVerifiedBot) signals.push("rdns:verified")
+  }
+
+  const accepthtml=req.headers["accept"]?.includes("text/html");
+  if (!accepthtml && req.method === "GET") {
+    totalscore+=15;
+    signals.push("accept:no-html(15)")
+  }
+
+  req.botDetection={
+    isBot:totalscore>=70,
+    isSuspicious:totalscore>=40 && totalscore<70,
+    isverifiedLegitBot:isVerifiedBot,
+    score:totalscore,
+    botname:detectedname,
+    signals,
+    ip,
+  };
+
+  req.isAI=req.botDetection.isBot;
+  req.botname=req.botDetection.botname;
+
+  next();
+}
