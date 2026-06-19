@@ -25,6 +25,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "lru-cache": "^11.5.1",
+    "minimatch": "^10.2.5",
     "node-fetch": "^3.3.2"
   }
 }
