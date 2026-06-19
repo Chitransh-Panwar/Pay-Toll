@@ -1,11 +1,16 @@
 import {Connection,PublicKey} from "@solana/web3.js"
 import { getAssociatedTokenAddress } from "@solana/spl-token"
-const usedSignature=new Set();
 const USDC_MINT_STR="4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
 const USDC_MINT = new PublicKey(USDC_MINT_STR);
+import { createClient } from "@supabase/supabase-js";
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 export async function verifyPayment(txSignature,expectedRecipientWallet,expectedAmount) {
-    if (usedSignature.has(txSignature)) {
-        return {valid:false,reason:"Already used"};
+    const {data:existing} = await supabase.from("verified_tx_cache").select("signature").eq("signature",txSignature).maybeSingle();
+    if (existing) {
+        return {valid:false,reason:"already used"}
     }
     const rpcUrl=process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com";
     const connection=new Connection(rpcUrl,"confirmed");
@@ -49,7 +54,14 @@ export async function verifyPayment(txSignature,expectedRecipientWallet,expected
         if (AmountReceived<expectedAmount) {
             return {valid:false,reason:"insufficient amount"};
         }
-        usedSignature.add(txSignature);
+        await supabase.from("verified_tx_cache").insert({
+            signature:txSignature,
+            wallet_address:expectedRecipientWallet,
+            amount:expectedAmount,
+            resource:"unknown",
+        })
+
+        
         return {
             valid:true,
             amountReceived:AmountReceived
