@@ -54,12 +54,15 @@ export async function verifyPayment(txSignature,expectedRecipientWallet,expected
         if (AmountReceived<expectedAmount) {
             return {valid:false,reason:"insufficient amount"};
         }
-        await supabase.from("verified_tx_cache").insert({
+        const {error:insertError }=await supabase.from("verified_tx_cache").insert({
             signature:txSignature,
             wallet_address:expectedRecipientWallet,
             amount:expectedAmount,
             resource:"unknown",
         })
+        if(insertError) {
+            console.error("Failed to write to verified_tx_cache:", insertError.message);
+        }
 
         
         return {

@@ -16,20 +16,19 @@ const paywall = createPaywall({
 });
 
 app.use(expressMiddleware(paywall));
-
 app.get("/articles/test", (req, res) => {
-  if (req.paywallVerified) {
+  if (req.paywallPayment) {
     return res.json({
       content: "Here is your article.",
       paid: true,
-      sig: req.paywallPayment?.txSignature,
+      sig: req.paywallPayment.txSignature,
     });
   }
   res.json({ content: "Here is your article.", paid: false });
 });
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+app.get("/free/test", (req, res) => {
+  res.json({ status: "free content" });
 });
 
 app.listen(3000, () => {
