@@ -11,6 +11,20 @@ export class PaymentBudgetExceededError extends PaywallError {
         this.name="PaymentBudgetExceededError";
     }
 }
+export class PaymentRefusedError extends PaywallError {
+  constructor(message, details) {
+    super("PAYMENT_REFUSED", message);
+    this.name = "PaymentRefusedError";
+  }
+}
+
+export class UnsupportedChallengeError extends PaywallError {
+  constructor(message, details) {
+    super("UNSUPPORTED_CHALLENGE", message);
+    this.name = "UnsupportedChallengeError";
+  }
+}
+
 export class PaymentAmountExceededError extends PaywallError {
   constructor(message) {
     super(message, "AMOUNT_EXCEEDED");
