@@ -175,6 +175,7 @@ export function headerScore(headers) {
   if (!headers["accept"]) score+= 20
   if (headers["accept"]=== "*/*") score+=15
   if (headers["connection"]) score+=10
+  if (headers["sec-fetch-mode"] === "cors") score += 20;
   return score
 }
 
