@@ -1,8 +1,7 @@
 import { matchesProtectedRoute } from "./core/routematcher.js";
-import { generateChallenge, verifyChallenge } from "../../../server/services/paymentChallenge.js";
-import { verifyPayment } from "../../../server/services/verifyPayment.js";
-import { aiDetector } from "../../../server/middleware/botdetecter.js";
-
+import { generateChallenge, verifyChallenge } from "./core/paymentChallenge.js";
+import { verifyPayment } from "./core/verifyPayment.js";
+import { aiDetector } from "./core/botDetector.js";
 /**
  * @typedef {object} PaywallConfig
  * @property {string} walletAddress           Solana wallet address that receives USDC payments.

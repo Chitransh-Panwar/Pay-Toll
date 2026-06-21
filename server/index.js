@@ -2,7 +2,7 @@ import express from "express";
 import "dotenv/config";
 import { createPaywall } from "../packages/publisher-sdk/src/index.js";
 import { expressMiddleware } from "../packages/publisher-sdk/src/adapters/express.js";
-import { initializeDatacenterRanges } from "./middleware/botdetecter.js";
+import { initializeDatacenterRanges } from "../packages/publisher-sdk/src/core/botDetector.js";
 
 const app = express();
 

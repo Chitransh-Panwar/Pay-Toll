@@ -1,0 +1,46 @@
+{
+  "name": "paytoll-sdk",
+  "version": "0.1.0",
+  "description": "Drop-in AI bot paywall, fully wallet-based: provide your Solana wallet, receive USDC directly. Local bot detection + HTTP 402 challenge flow. Works with Express, Next.js, Fastify, and Cloudflare Workers.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./express": "./src/adapters/express.js",
+    "./nextjs": "./src/adapters/nextjs.js",
+    "./fastify": "./src/adapters/fastify.js",
+    "./cloudflare": "./src/adapters/cloudflare.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "ai",
+    "paywall",
+    "x402",
+    "solana",
+    "bot-detection",
+    "express",
+    "nextjs",
+    "fastify",
+    "cloudflare-workers",
+    "monetization"
+  ],
+  "author": "Chitransh Panwar",
+  "scripts": {
+    "lint": "node --check src/index.js"
+  },
+  "dependencies": {
+    "minimatch": "^9.0.0",
+    "@supabase/supabase-js": "^2.0.0",
+    "node-fetch": "^3.3.2",
+    "@solana/spl-token": "^0.4.0",
+    "@solana/web3.js": "^1.95.0",
+    "lru-cache": "^11.5.1"
+  }
+}
